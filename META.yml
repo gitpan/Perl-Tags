@@ -1,10 +1,11 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Perl-Tags
-version:      0.2
+version:      0.21
 version_from: lib/Perl/Tags.pm
 installdirs:  site
 requires:
+    Module::Locate:                0
     Test::More:                    0
 
 distribution_type: module

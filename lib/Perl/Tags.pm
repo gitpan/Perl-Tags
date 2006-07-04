@@ -77,7 +77,7 @@ use Data::Dumper;
 use File::Spec;
 
 use overload q("") => \&to_string;
-our $VERSION = 0.2;
+our $VERSION = 0.21;
 
 =head2 C<new>
 

@@ -9,7 +9,8 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/Perl/Tags.pm',
     PL_FILES            => {},
     PREREQ_PM => {
-        'Test::More' => 0,
+        'Test::More'     => 0,
+        'Module::Locate' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Perl-Tags-*' },

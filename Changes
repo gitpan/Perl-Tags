@@ -1,6 +1,9 @@
 Revision history for Perl-Tags
 
-0.02    2006-07-03
+0.21    2006-07-04
+        Added prerequesite Module::Locate
+
+0.2     2006-07-03
         Bundled up for CPAN distribution, with better docs
         (but only minimal tests, sorry 'bout that)
 

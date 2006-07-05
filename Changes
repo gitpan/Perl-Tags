@@ -1,5 +1,9 @@
 Revision history for Perl-Tags
 
+0.23    2006-07-05
+        Added the tests mentioned below to the distribution :-)
+        Test and documentation for exuberant extensions
+
 0.22    2006-07-05
         Made subclassing easier
         added basic tests (NB: not particularly high coverage, nor testing Exuberant extensions)

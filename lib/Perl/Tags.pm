@@ -14,14 +14,14 @@ Perl::Tags - Generate (possibly exuberant) Ctags style tags for Perl sourcecode
         );
 
 Recursively follows C<use> and C<require> statements, up to a maximum
-of max_level.
+of C<max_level>.
 
 The implemented tagger, C<Perl::Tags::Naive> is a more-or-less straight
 ripoff, slightly updated, of the original pltags code, and is rather
 naive.  It should be possible to subclass using something like C<PPI>
-or C<Text::Balanced>, though currently the internals are a bit pish
-(lots of yummy direct hash access to objects), so if you want to
-subclass please get in touch with me to discuss the interface.
+or C<Text::Balanced>, though be aware that this is alpha software and
+the internals are subject to change (so get in touch to let me know
+what you want to do and I'll try to help).
 
 =head1 FEATURES
 
@@ -77,7 +77,7 @@ use Data::Dumper;
 use File::Spec;
 
 use overload q("") => \&to_string;
-our $VERSION = 0.22;
+our $VERSION = 0.23;
 
 =head2 C<new>
 
@@ -85,6 +85,12 @@ L<Perl::Tags> is an abstract baseclass.  L<Perl::Tags::Naive> is provided
 and can be instantiated with C<new>.
 
     $naive_tagger = Perl::Tags::Naive->new( max_level=>2 );
+
+Accepts the following parameters
+
+    max_level:    levels of "use" statements to descend into, default 2
+    do_variables: tag variables?  default 1 (true)
+    exts:         use the Exuberant extensions
 
 =cut
 

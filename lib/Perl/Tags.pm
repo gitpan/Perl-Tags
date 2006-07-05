@@ -77,7 +77,7 @@ use Data::Dumper;
 use File::Spec;
 
 use overload q("") => \&to_string;
-our $VERSION = 0.21;
+our $VERSION = 0.22;
 
 =head2 C<new>
 
@@ -205,6 +205,7 @@ sub process {
     while (my $file = $self->popqueue) {
         $self->process_item( %options, %$file );
     }
+    return 1;
 }
 
 =head2 C<queue>, C<popqueue>
@@ -330,6 +331,36 @@ A naive implementation.  That is to say, it's based on the classic C<pltags.pl> 
 distributed with Perl, which is by and large a better bet than the results produced by
 C<ctags>.  But a "better" approach may be to integrate this with PPI.
 
+=head2 Subclassing
+
+See L<TodoTagger> in the C<t/> directory of the distribution for a fully
+working example (tested in <t/02_subclass.t>).  You may want to reuse parsers
+in the ::Naive package, or use all of the existing parsers and add your own.
+
+    package My::Tagger;
+    use Perl::Tags;
+    our @ISA = qw( Perl::Tags::Naive );
+
+    sub get_parsers {
+        my $self = shift;
+        return (
+            $self->can('todo_line'),     # a new parser
+            $self->SUPER::get_parsers(), # all ::Naive's parsers
+            # or maybe...
+            $self->can('variable'),      # one of ::Naive's parsers
+        );
+    }
+
+    sub todo_line { 
+        # your new parser code here!
+    }
+    sub package_line {
+        # override one of ::Naive's parsers
+    }
+
+Because ::Naive uses C<can('parser')> instead of C<\&parser>, you
+can just override a particular parser by redefining in the subclass. 
+
 =head2 C<get_parsers>
 
 The following parsers are defined by this module.
@@ -339,12 +370,13 @@ The following parsers are defined by this module.
 =cut
 
 sub get_parsers {
+    my $self = shift;
     return (
-        \&trim,
-        \&variable,
-        \&package_line,
-        \&sub_line,
-        \&use_line,
+        $self->can('trim'),
+        $self->can('variable'),
+        $self->can('package_line'),
+        $self->can('sub_line'),
+        $self->can('use_line'),
     );
 }
 

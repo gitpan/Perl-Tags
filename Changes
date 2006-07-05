@@ -1,5 +1,10 @@
 Revision history for Perl-Tags
 
+0.22    2006-07-05
+        Made subclassing easier
+        added basic tests (NB: not particularly high coverage, nor testing Exuberant extensions)
+        added subclassing tests
+
 0.21    2006-07-04
         Added prerequesite Module::Locate
 

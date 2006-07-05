@@ -11,6 +11,7 @@ WriteMakefile(
     PREREQ_PM => {
         'Test::More'     => 0,
         'Module::Locate' => 0,
+        'File::Spec'     => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Perl-Tags-*' },

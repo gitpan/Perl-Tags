@@ -6,6 +6,11 @@ http://perlmonks.org/?node_id=558802
     (imp) perlmonks thread that prompted me to get this packaged up
 http://use.perl.org/~mr_bean/journal/30174 
     (mr_bean) encouraging journal entry
+http://ctags.sourceforge.net/FORMAT
+    (via wolverian) "mainly, the function tag for variables would be nice"
+    (add sigils?  iskeyword+=@-@)
+http://groups.yahoo.com/group/vim/message/68815
+    (ml thread on vim@vim.org, really about perlcomplete, but me and [dm]r_bean appear to have hijacked it to talk Perl::Tags)
 
 INSTALLATION
 

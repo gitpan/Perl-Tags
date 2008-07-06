@@ -1,18 +1,19 @@
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
+use inc::Module::Install;
 
-WriteMakefile(
-    NAME                => 'Perl::Tags',
-    AUTHOR              => 'osfameron <osfameron@cpan.org>',
-    VERSION_FROM        => 'lib/Perl/Tags.pm',
-    ABSTRACT_FROM       => 'lib/Perl/Tags.pm',
-    PL_FILES            => {},
-    PREREQ_PM => {
-        'Test::More'     => 0,
-        'Module::Locate' => 0,
-        'File::Spec'     => 0,
-    },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'Perl-Tags-*' },
-);
+name        'Perl-Tags';
+all_from    'lib/Perl/Tags.pm';
+
+license     'perl';
+author      'osfameron';
+
+requires        'File::Spec';
+requires        'File::Temp';
+requires        'Module::Locate';
+build_requires  'Test::More' => 0.42;
+
+recommends      'PPI';
+
+auto_install;
+WriteAll;

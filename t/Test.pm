@@ -14,4 +14,3 @@ sub wibble {
 # TODO: test this line
 
 1;
-

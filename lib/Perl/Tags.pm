@@ -44,15 +44,16 @@ contains the following:
     EOF
     endfunction
 
+    " let vim do the tempfile cleanup and protection
+    let s:tagsfile = tempname()
+
     function s:do_tags(filename)
         perl <<EOF
             my $filename = VIM::Eval('a:filename');
 
             $naive_tagger->process(files => $filename, refresh=>1 );
 
-            # we'll now do a global (for this PID) tags file which will get updated as you source dive.
-
-            my $tagsfile="/tmp/tags_$$";
+            my $tagsfile=VIM::Eval('s:tagsfile');
             VIM::SetOption("tags+=$tagsfile");
 
             # of course, it may not even output, for example, if there's nothing new to process
@@ -65,7 +66,14 @@ contains the following:
     let s:defined_functions = 1
     endif
 
-    call s:do_tags(expand('%'))
+    " call s:do_tags(expand('%'))
+
+    augroup perltags
+    au!
+    autocmd BufRead,BufWritePost *.pm,*.pl call s:do_tags(expand('%'))
+    augroup END
+
+
 
 =head1 METHODS
 
@@ -77,7 +85,7 @@ use Data::Dumper;
 use File::Spec;
 
 use overload q("") => \&to_string;
-our $VERSION = 0.23;
+our $VERSION = 0.24;
 
 =head2 C<new>
 
@@ -382,7 +390,9 @@ sub get_parsers {
         $self->can('variable'),
         $self->can('package_line'),
         $self->can('sub_line'),
+        $self->can('use_constant'),
         $self->can('use_line'),
+        $self->can('label_line'),
     );
 }
 
@@ -405,11 +415,6 @@ sub trim {
 =item C<variable>
 
 Tags definitions of C<my>, C<our>, and C<local> variables.
-Unlike C<pltags.pl>, we don't yet handle continuations for this
-or for other  parsers (e.g.
-
-    my ( $var1,
-         $var2 );   # <--- $var2 won't be tagged
 
 Returns a L<Perl::Tags::Tag::Var> if found
 
@@ -491,6 +496,27 @@ sub sub_line {
     return;
 }
 
+=item C<use_constant>
+
+Parse a use constant directive
+
+=cut
+
+sub use_constant {
+    my ($self, $line, $statement, $file) = @_;
+    if ($statement =~/^\s*use\s+constant\s+([^=[:space:]]+)/) {
+        return (
+            Perl::Tags::Tag::Constant->new(
+                name    => $1,
+                file    => $file,
+                line    => $line,
+                linenum => $.,
+            )
+        );
+    }
+    return;
+}
+
 =item C<use_line>
 
 Parse a use, require, and also a use_ok line (from Test::More).
@@ -515,6 +541,27 @@ sub use_line {
         }
     }
     return @ret;
+}
+
+=item C<label_line>
+
+Parse label declaration
+
+=cut
+
+sub label_line {
+    my ($self, $line, $statement, $file) = @_;
+    if ($statement=~/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:(?:[^:]|$)/) {
+        return (
+            Perl::Tags::Tag::Label->new(
+                name    => $1,
+                file    => $file,
+                line    => $line,
+                linenum => $.,
+            )
+        );
+    }
+    return;
 }
 
 =back
@@ -546,6 +593,7 @@ sub new {
 
     $line =~ s{\\}{\\\\}g;
     $line =~ s{/}{\\/}g;
+    # $line =~ s{\$}{\\\$}g;
 
     my $self = bless {
         name   => $options{name},
@@ -589,7 +637,7 @@ sub to_string {
     my $linenum = $self->{linenum};
     my $pkg  = $self->{pkg} || '';
 
-    my $tagline = "$name\t$file\t/^$line\$/";
+    my $tagline = "$name\t$file\t/$line/";
 
     # Exuberant extensions
     if ($self->{exts}) {
@@ -704,6 +752,28 @@ sub on_register {
     return 1;
 } 
 
+=head1 C<Perl::Tags::Tag::Constant>
+
+=head2 C<type>: c
+
+=cut
+
+package Perl::Tags::Tag::Constant;
+our @ISA = qw/Perl::Tags::Tag/;
+
+sub type { 'c' }
+
+=head1 C<Perl::Tags::Tag::Label>
+
+=head2 C<type>: l
+
+=cut
+
+package Perl::Tags::Tag::Label;
+our @ISA = qw/Perl::Tags::Tag/;
+
+sub type { 'l' }
+
 =head1 C<Perl::Tags::Tag::Recurse>
 
 =head2 C<type>: dummy
@@ -738,11 +808,45 @@ sub on_register {
 ##
 1;
 
+=head1 CONTRIBUTIONS
+
+(Apologies if I've missed anyone out -- I'm working on notes from... oops...
+a couple of years ago.  Huge thanks!)
+
+=over 4
+
+=item wolverian
+
+::PPI subclass
+
+=item Ian Tegebo
+
+patch to use File::Temp
+
+=item DMITRI
+
+patch to parse constant and label declarations
+
+=item drbean
+
+::Naive::Spiffy and ::Naive::Lib subclasses
+
+=item Alias
+
+prodding me to make repo public
+
+=item nothingmuch
+
+::PPI fixes, pestering me to release again
+
+=back
+
 =head1 AUTHOR and LICENSE
 
-    osfameron (2006) - osfameron@gmail.com
+    osfameron (2006-2008) - osfameron@gmail.com
 
 For support, try emailing me or grabbing me on irc #london.pm on irc.perl.org
+Offers to co-maintain this module are very welcome!
 
 This was originally ripped off pltags.pl, as distributed with vim
 and available from L<http://www.mscha.com/mscha.html?pltags#tools>

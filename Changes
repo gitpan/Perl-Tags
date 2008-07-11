@@ -1,5 +1,8 @@
 Revision history for Perl-Tags
 
+0.25    2008-07-11
+        Removing t/pod-coverage.t until I have time to fix
+
 0.24    2008-07-06 -- the nuffintags version
         Folded in changes from contributors
         ::PPI module contributed by Wolverian

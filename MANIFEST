@@ -26,7 +26,6 @@ t/04_ppi.t
 t/05_vim.t
 t/_vimrc
 t/boilerplate.t
-t/pod-coverage.t
 t/pod.t
 t/session.vim
 t/Test.pm

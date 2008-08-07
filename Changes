@@ -1,5 +1,10 @@
 Revision history for Perl-Tags
 
+0.26    2008-08-07
+        Bruno Vecchi pointed out the example perl.vim doesn't work:
+            Added comment about 'EOF'
+            Uncommented call to s:do_tags
+
 0.25    2008-07-11
         Removing t/pod-coverage.t until I have time to fix
 

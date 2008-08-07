@@ -66,14 +66,27 @@ contains the following:
     let s:defined_functions = 1
     endif
 
-    " call s:do_tags(expand('%'))
+    call s:do_tags(expand('%'))
 
     augroup perltags
     au!
     autocmd BufRead,BufWritePost *.pm,*.pl call s:do_tags(expand('%'))
     augroup END
 
+Note the following:
 
+=over 4
+
+=item *
+
+You will need to have a vim with perl compiled in it.  Debuntu packages this as C<vim-perl>.
+Alternatively you can compile from source (you'll need Perl + the development headers C<libperl-dev>).
+
+=item *
+
+The C<EOF> in the examples has to be at the beginning of the line (the verbatim text above has leading whitespace)
+
+=back
 
 =head1 METHODS
 
@@ -85,7 +98,7 @@ use Data::Dumper;
 use File::Spec;
 
 use overload q("") => \&to_string;
-our $VERSION = 0.25;
+our $VERSION = 0.26;
 
 =head2 C<new>
 

@@ -98,7 +98,20 @@ use Data::Dumper;
 use File::Spec;
 
 use overload q("") => \&to_string;
-our $VERSION = 0.26;
+our $VERSION = 0.27;
+
+{
+    # Tags that start POD:
+    my @start_tags = qw(pod head1 head2 head3 head4 over item back begin
+                        end for encoding);
+    my @end_tags = qw(cut);
+
+    my $startpod = '^=(?:' . join('|', @start_tags) . ')\b';
+    my $endpod = '^=(?:' . join('|', @end_tags) . ')\b';
+
+    sub STARTPOD { qr/$startpod/ }
+    sub ENDPOD { qr/$endpod/ }
+}
 
 =head2 C<new>
 
@@ -298,12 +311,34 @@ sub process_item {
 sub process_file {
     my ($self, $file, @parsers) = @_;
 
+    # SUPER dirty workaround for the fact that Perl::Tags::PPI simply
+    # doesn't cooperate with any other parsers. This whole system
+    # is flawed because you can't use several parsers together. But
+    # I may be misunderstanding things. --Steffen
+    my $ppi_parser;
+    if (Perl::Tags::PPI->can('ppi_all')) {
+        my $ppisub = Perl::Tags::PPI->can('ppi_all');
+        my @tmpparsers = @parsers;
+        @parsers = ();
+        foreach my $parser (@tmpparsers) {
+            if ("$parser" ne "$ppisub") {
+                push @parsers, $parser;
+            }
+            else {
+                $ppi_parser = $parser;
+            }
+        }
+    }
+
     open (my $IN, '<', $file) or die "Couldn't open file `$file`: $!\n";
 
     # default line by line parsing.  Or override it
 
+    my $start = STARTPOD;
+    my $end = ENDPOD;
 
     while (<$IN>) {
+        next if (/$start/o .. /$end/o);     # Skip over POD.
         chomp;
         my $statement = my $line = $_;
         PARSELOOP: for my $parser (@parsers) {
@@ -313,6 +348,11 @@ sub process_file {
                                   $file );
             $self->register( $file, @tags );
         }
+    }
+
+    if (defined $ppi_parser) {
+        my @tags = $ppi_parser->( $self, $file );
+        $self->register( $file, @tags );
     }
 }
 
@@ -823,8 +863,11 @@ sub on_register {
 
 =head1 CONTRIBUTIONS
 
-(Apologies if I've missed anyone out -- I'm working on notes from... oops...
-a couple of years ago.  Huge thanks!)
+Contributions are always welcome.  The repo is in git:
+
+    http://github.com/osfameron/perl-tags
+
+Please fork and make pull request.  Maint bits available on request.
 
 =over 4
 
@@ -850,16 +893,20 @@ prodding me to make repo public
 
 =item nothingmuch
 
-::PPI fixes, pestering me to release again
+::PPI fixes
+
+=item tsee
+
+Command line interface, applying patches
 
 =back
 
 =head1 AUTHOR and LICENSE
 
-    osfameron (2006-2008) - osfameron@gmail.com
+    osfameron (2006-2009) - osfameron@cpan.org
+                            and contributors, as above
 
 For support, try emailing me or grabbing me on irc #london.pm on irc.perl.org
-Offers to co-maintain this module are very welcome!
 
 This was originally ripped off pltags.pl, as distributed with vim
 and available from L<http://www.mscha.com/mscha.html?pltags#tools>

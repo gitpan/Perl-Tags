@@ -1,6 +1,7 @@
 package Perl::Tags::Naive::Lib;
 
-use base qw/Perl::Tags::Naive/;
+use strict; use warnings;
+use parent 'Perl::Tags::Naive';
 
 =head2 C<get_parsers>
 

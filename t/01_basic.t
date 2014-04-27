@@ -2,12 +2,12 @@
 use strict; use warnings;
 use Data::Dumper;
 
-use Test::More tests => 9;
+use Test::More;
+use Test::Perl::Tags;
 use FindBin qw($Bin);
 
-BEGIN {
-  use_ok( 'Perl::Tags' );
-}
+use Perl::Tags;
+use Perl::Tags::Naive;
 
 my $naive_tagger = Perl::Tags::Naive->new( max_level=>1 );
 ok (defined $naive_tagger, 'created Perl::Tags' );
@@ -21,7 +21,19 @@ my $result =
     );
 ok ($result, 'processed successfully' ) or diag "RESULT $result";
 
-like ($naive_tagger, qr{Test\t\S+[\\/]Test.pm\t/package Test;/}       , 'package line');
-like ($naive_tagger, qr{bar\t\S+[\\/]Test.pm\t/my \(\$foo, \$bar\);/} , 'variable 1');
-like ($naive_tagger, qr{foo\t\S+[\\/]Test.pm\t/my \(\$foo, \$bar\);/} , 'variable 2');
-like ($naive_tagger, qr{wibble\t\S+[\\/]Test.pm\t/sub wibble \{/}     , 'subroutine');
+tag_ok $naive_tagger, 
+    Test => "$Bin/Test.pm" => 'package Test;',
+    'package line';
+tag_ok $naive_tagger, 
+    bar =>  "$Bin/Test.pm" => 'my ($foo, $bar);', 
+    'variable 1';
+tag_ok $naive_tagger, 
+    foo => "$Bin/Test.pm" => 'my ($foo, $bar);', 
+    'variable 2';
+tag_ok $naive_tagger, 
+    wibble => "$Bin/Test.pm" => 'sub wibble {', 
+    'subroutine';
+
+ok $naive_tagger !~ /sub example/, 'Code in POD is skipped';
+
+done_testing;

@@ -1,5 +1,3 @@
-#!/usr/bin/perl
-
 =head1 NAME
 
 Perl::Tags - Generate (possibly exuberant) Ctags style tags for Perl sourcecode
@@ -95,18 +93,8 @@ but instead processes the next file recursively.
 
 =head1 METHODS
 
+
 =cut
-
-package Perl::Tags;
-
-use strict; use warnings;
-
-use Perl::Tags::Tag;
-use Data::Dumper;
-use File::Spec;
-
-use overload q("") => \&to_string;
-our $VERSION = 0.30;
 
 =head2 C<new>
 
@@ -121,19 +109,8 @@ Accepts the following parameters
     do_variables: tag variables?  default 1 (true)
     exts:         use the Exuberant extensions
 
+
 =cut
-
-sub new {
-    my $class = shift;
-    my %options = (
-        max_level    => 2, # go into next file, but not down the whole tree
-        do_variables => 1, 
-        @_);
-
-    my $self = \%options;
-
-    return bless $self, $class;
-}
 
 =head2 C<to_string>
 
@@ -142,55 +119,16 @@ file.
 
     print $tagger;
 
+
 =cut
-
-sub to_string {
-    my $self = shift;
-    my $tags = $self->{tags} or return '';
-    my %tags = %$tags;
-
-    my $s; # to test
-
-    my @lines;
-
-    # the structure is an HoHoA of
-    #
-    #   {tag_name}
-    #       {file_name}
-    #           [ tags ]
-    #
-    #   where the file_name level is to allow us to prioritize tags from
-    #   first-included files (on the basis that they may well be the files we
-    #   want to see first.
-
-    my $ord = $self->{order};
-    my @names = sort keys %$tags;
-    for (@names) {
-        my $files = $tags{$_};
-        push @lines, map { @{$files->{$_}} } 
-            sort { $ord->{$a} <=> $ord->{$b} } keys %$files;
-    }
-    return join "\n", @lines;
-}
 
 =head2 C<clean_file>
 
 Delete all tags, but without touching the "order" seen, that way, if the tags
 are recreated, they will remain near the top of the "interestingness" tree
 
-=cut
 
-sub clean_file {
-    my ($self, $file) = @_;
-    
-    my $tags = $self->{tags} or die "Trying to clean '$file', but there's no tags";
-    
-    for my $name (keys %$tags) {
-        delete $tags->{$name}{$file};
-    }
-    delete $self->{seen}{$file};
-    # we don't delete the {order} though
-}
+=cut
 
 =head2 C<output>
 
@@ -198,22 +136,8 @@ Save the file to disk if it has changed.  (The private C<{is_dirty}> attribute
 is used, as the tags object may be made up incrementally and recursively within
 your IDE.
 
+
 =cut
-
-sub output {
-    my $self = shift;
-    my %options = @_;
-    my $outfile = $options{outfile} or die "No file to write to";
-
-    return unless $self->{is_dirty} || ! -e $outfile;
-
-    open (my $OUT, '>', $outfile) or die "Couldn't open $outfile for write: $!";
-	binmode STDOUT, ":encoding(UTF-8)";
-    print $OUT $self;
-    close $OUT or die "Couldn't close $outfile for write: $!";
-
-    $self->{is_dirty} = 0;
-}
 
 =head2 C<process>
 
@@ -227,41 +151,15 @@ Scan one or more Perl file for tags
         refresh => 1,
     );
 
+
 =cut
-
-sub process {
-    my $self = shift;
-    my %options = @_;
-    my $files = $options{files} || die "No file passed to process";
-    my @files = ref $files ? @$files : ($files);
-
-    $self->queue( map { 
-                          { file=>$_, level=>1, refresh=>$options{refresh} } 
-                      } @files);
-
-    while (my $file = $self->popqueue) {
-        $self->process_item( %options, %$file );
-    }
-    return 1;
-}
 
 =head2 C<queue>, C<popqueue>
 
 Internal methods managing the processing
 
+
 =cut
-
-sub queue {
-    my $self = shift;
-    for (@_) {
-        push @{$self->{queue}}, $_ unless $_->{level} > $self->{max_level};
-    }
-}
-
-sub popqueue {
-    my $self = shift;
-    return pop @{$self->{queue}};
-}
 
 =head2 C<process_item>, C<process_file>, C<get_tags_for_file>
 
@@ -269,55 +167,8 @@ Do the heavy lifting for C<process> above.
 
 Taggers I<must> override the abstract method C<get_tags_for_file>.
 
+
 =cut
-
-sub process_item {
-    my $self = shift;
-    my %options = @_;
-    my $file  = $options{file} || die "No file passed to proces";
-
-    # make filename absolute, (this could become an option if appropriately
-    # refactored) but because of my usage (tags_$PID file in /tmp) I need the
-    # absolute path anyway, and it prevents the file being included twice under
-    # slightly different names (unless you have 2 hardlinked copies, as I do
-    # for my .vim/ directory... bah)
-
-    $file = File::Spec->rel2abs( $file ) ;
-
-    if ($self->{seen}{$file}++) {
-        return unless $options{refresh};
-        $self->clean_file( $file );
-    }
-
-    $self->{is_dirty}++; # we haven't yet been written out
-
-    $self->{order}{$file} = $self->{curr_order}++ || 0;
-
-    $self->{current} = {
-        file          => $file,
-        package_name  => '',
-        has_subs      => 0,
-        var_continues => 0,
-        level         => $options{level},
-    };
-
-    $self->process_file( $file );
-
-    return $self->{tags};
-}
-
-sub process_file {
-    my ($self, $file) = @_;
-
-    my @tags = $self->get_tags_for_file( $file );
-
-    $self->register( $file, @tags );
-}
-
-sub get_tags_for_file {
-    use Carp 'confess';
-    confess "Abstract method get_tags_for_file called";
-}
 
 =head2 C<register>
 
@@ -331,25 +182,8 @@ C<Perl::Tags::Tag::Recurse> object.  This is a pseudo-tag which causes the linke
 module to be scanned in turn.  See L<Perl::Tags::Naive>'s handling of C<use>
 statements as an example!
 
+
 =cut
-
-sub register {
-    my ($self, $file, @tags) = @_;
-    for my $tag (@tags) {
-        $tag->on_register( $self ) or next;
-        $tag->{pkg} ||=  $self->{current}{package_name};
-        $tag->{exts} ||= $self->{exts};
-
-        # and copy absolute file if requested
-        # $tag->{file} = $file if $self->{absolute};
-
-        my $name = $tag->{name};
-        push @{ $self->{tags}{$name}{$file} }, $tag;
-    }
-}
-
-##
-1;
 
 =head1 SEE ALSO
 
@@ -409,4 +243,6 @@ Written by Michael Schaap <pltags@mscha.com>.
 
 This is licensed under the same terms as Perl itself.  (Or as Vim if you prefer).
 
+
 =cut
+

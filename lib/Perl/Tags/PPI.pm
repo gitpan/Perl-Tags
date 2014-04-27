@@ -1,7 +1,7 @@
 package Perl::Tags::PPI;
 
-use strict;
-use warnings;
+use strict; use warnings;
+
 use base qw(Perl::Tags);
 
 use PPI;
@@ -17,18 +17,12 @@ sub ppi_all {
       @{ $doc->find(sub { $_[1]->isa("PPI::Statement") }) || [] }
 }
 
-sub process_file {
+sub get_tags_for_file {
     my ( $self, $file, @parsers ) = @_;
 
-    for my $parser (@parsers) {
-        my @tags = $parser->( $self, $file );
+    my @tags = $self->ppi_all( $file );
 
-        $self->register( $file, @tags );
-    }
-}
-
-sub get_parsers {
-    shift->can('ppi_all');
+    return @tags;
 }
 
 sub _tagify {

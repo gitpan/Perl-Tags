@@ -2,11 +2,12 @@
 use strict; use warnings;
 use Data::Dumper;
 
-use Test::More tests => 11;
+use Test::More;
+use Test::Perl::Tags;
 use FindBin qw($Bin);
 
 use lib ($Bin);
-use_ok( 'TodoTagger' ); # test class
+use TodoTagger; # test class
 
 my $todo_tagger = TodoTagger->new( max_level=>1 );
 ok (defined $todo_tagger, 'created Perl::Tags' );
@@ -21,8 +22,21 @@ my $result =
     );
 ok ($result, 'processed successfully' ) or diag "RESULT $result";
 
-like ($todo_tagger, qr{Test\t\S+[\\/]Test.pm\t/package Test;/}       , 'package line');
-like ($todo_tagger, qr{bar\t\S+[\\/]Test.pm\t/my \(\$foo, \$bar\);/} , 'variable 1');
-like ($todo_tagger, qr{foo\t\S+[\\/]Test.pm\t/my \(\$foo, \$bar\);/} , 'variable 2');
-like ($todo_tagger, qr{wibble\t\S+[\\/]Test.pm\t/sub wibble \{/}     , 'subroutine');
-like ($todo_tagger, qr{TODO\t\S+[\\/]Test.pm\t/# TODO: test this line/}, "subclass's TODO tag");
+
+tag_ok $todo_tagger, 
+    Test => "$Bin/Test.pm" => 'package Test;',
+    'package line';
+tag_ok $todo_tagger, 
+    bar =>  "$Bin/Test.pm" => 'my ($foo, $bar);', 
+    'variable 1';
+tag_ok $todo_tagger, 
+    foo => "$Bin/Test.pm" => 'my ($foo, $bar);', 
+    'variable 2';
+tag_ok $todo_tagger, 
+    wibble => "$Bin/Test.pm" => 'sub wibble {', 
+    'subroutine';
+tag_ok $todo_tagger, 
+    TODO => "$Bin/Test.pm" => '# TODO: test this line',
+    "subclass\'s TODO tag";
+
+done_testing;

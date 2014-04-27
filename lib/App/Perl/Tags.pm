@@ -1,0 +1,119 @@
+#!/usr/bin/env perl
+use 5.006;
+use strict; use warnings;
+
+package App::Perl::Tags;
+use Getopt::Long ();
+use Pod::Usage qw/pod2usage/;
+use File::Find::Rule;
+
+use Perl::Tags;
+use Perl::Tags::Hybrid;
+use Perl::Tags::PPI;
+use Perl::Tags::Naive::Moose; # includes ::Naive
+
+our $VERSION = '0.02';
+
+sub run {
+  my $class = shift;
+
+  my %options = (
+    outfile => 'perltags',
+    depth => 10,
+    variables => 1,
+    ppi => 0,
+    prune => [ ],
+    help => sub { $class->usage() },
+    version => sub { $class->version() },
+  );
+
+  Getopt::Long::GetOptions(
+    \%options,
+    'help|h',
+    'version|v',
+    'outfile|o=s',
+    'prune=s@',
+    'depth|d=i',
+    'vars|variables!',
+    'ppi|p!',
+  );
+
+  $class->usage() unless @ARGV;
+
+  $options{paths} = \@ARGV;
+
+  my $self = $class->new(%options);
+  $self->main();
+  exit();
+}
+
+sub new {
+  my ($class, %options) = @_;
+  $options{prune} = [ '.git', '.svn' ] unless @{ $options{prune} || [] };
+  return bless \%options, $class;
+}
+
+sub version {
+  print "perl-tags v. $VERSION (Perl Tags v. $Perl::Tags::VERSION)\n";
+  exit();
+}
+
+sub usage {
+  pod2usage(0);
+}
+
+sub main {
+  my $self = shift;
+
+  my %args = (
+    max_level    => $self->{depth},
+    exts         => 1,
+    do_variables => $self->{variables},
+  );
+
+
+  my $ptag = Perl::Tags::Hybrid->new(
+    %args,
+    taggers => [
+      Perl::Tags::Naive::Moose->new( %args ),
+      $self->{ppi} ? Perl::Tags::PPI->new( %args ) : (),
+    ],
+  );
+
+  my @files = $self->get_files;
+
+  $ptag->process(files => \@files);
+  $ptag->output(outfile => $self->{outfile}); 
+  return;
+}
+
+sub get_files {
+  my $self = shift;
+  my @prune = @{ $self->{prune} };
+  my @paths = @{ $self->{paths} };
+
+  my $rule = File::Find::Rule->new;
+
+  my @files = 
+    $rule->or(
+      $rule->new
+           ->directory
+           ->name(@prune)
+           ->prune
+           ->discard,
+      $rule->new
+        ->file,
+    )->in(@paths);
+
+  return @files;
+}
+
+=head1 AUTHOR
+
+Copyright 2009-2014, Steffen Mueller, with contributions from osfameron
+
+=cut
+
+# vim:ts=2:sw=2
+
+1;

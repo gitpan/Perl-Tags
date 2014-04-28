@@ -105,8 +105,10 @@ use Perl::Tags::Tag;
 use Data::Dumper;
 use File::Spec;
 
+our $VERSION = '0.30';
+$VERSION = eval $VERSION;
+
 use overload q("") => \&to_string;
-our $VERSION = 0.30;
 
 =head2 C<new>
 

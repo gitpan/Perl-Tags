@@ -27,8 +27,8 @@ lib/Perl/Tags/PPI.pm
 lib/Perl/Tags/Tag.pm
 lib/Test/Perl/Tags.pm
 Makefile.PL
-MANIFEST
-META.yml			# Will be created by "make dist"
+MANIFEST			This list of files
+META.yml
 MYMETA.json
 MYMETA.yml
 README

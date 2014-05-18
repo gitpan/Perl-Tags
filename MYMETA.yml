@@ -31,8 +31,8 @@ requires:
   File::Spec: 0
   File::Temp: 0
   Module::Locate: 0
-  PPI: 0
   Path::Tiny: 0
+  parent: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.3
+version: 0.30

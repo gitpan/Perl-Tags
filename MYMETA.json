@@ -40,13 +40,18 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "App::FatPacked" : "0",
+            "Moose" : "0",
+            "PPI" : "0"
+         },
          "requires" : {
             "File::Find::Rule" : "0",
             "File::Spec" : "0",
             "File::Temp" : "0",
             "Module::Locate" : "0",
-            "PPI" : "0",
-            "Path::Tiny" : "0"
+            "Path::Tiny" : "0",
+            "parent" : "0"
          }
       }
    },
@@ -56,5 +61,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.3"
+   "version" : "0.31"
 }
